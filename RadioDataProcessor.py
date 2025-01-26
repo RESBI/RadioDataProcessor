@@ -85,9 +85,7 @@ if __name__ == "__main__":
         
         if (len(read_out)): 
             header, data = read_out
-            #print(data)
-            # Fuck those weird noices
-            #data = filtOut(data, 0.05, debug = 1)
+            #data = filtOut(data, 0.05, debug = 1) Originally used to filter out random noise spike at 1419.999876MHZ
             data_T = data.transpose()
             #print(data_T)
             data_sortted = sortData(data_T)
