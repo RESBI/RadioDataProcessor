@@ -103,7 +103,6 @@ def plotPlot(file_item, debug = DEBUG):
     if (len(read_out)): 
         header, data = read_out
         #print(data)
-
         #data = filtOut(data, 0.05, debug = debug)
         data_T = sortData(data.transpose()) 
         #print(data_T)
@@ -123,7 +122,7 @@ def plotPlot(file_item, debug = DEBUG):
         print("[plotPlot] Failed: {} !".format(file_name))
 
 
-# Besices of being our workout, this part is kind of like an example.
+# Besides of being our workout, this part is kind of like an example.
 if __name__ == "__main__": 
     print(MESSAGE)
 
@@ -168,7 +167,7 @@ if __name__ == "__main__":
 
     if (args.debug):
         DEBUG = args.debug 
-        print("You've enabled the program to show debug info. ")
+        print("You've enable the program to show debug info. ")
 
 
     if (prefix == 0): 
