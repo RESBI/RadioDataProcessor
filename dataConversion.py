@@ -3,6 +3,7 @@
     Currently only used for conversions between frequency and wavelength
     1/27/2025 Resbi & RJGamesAhoy
 """
+import numpy as np
 
 SPEED_OF_LIGHT = 2.99792458e8 # Speed of light in M/s
 
@@ -61,9 +62,14 @@ class RadioConversions():
 
 def test(): 
     unitConverter = RadioConversions()
-    test = unitConverter.frequencyToWavelength(1420.05)
+    print("Processing single value") 
+    freq = 1420.4
+    test = unitConverter.frequencyToWavelength(freq)
+    print("{} MHz -> {} cm".format(freq, test))
 
-    print(test)
+    freqs = np.array([1420.05, 1420.50])
+    test = unitConverter.frequencyToWavelength(freqs)
+    print("{} MHz \n\tto\n{} cm".format(freqs, test))
 
 if __name__ == "__main__": 
     test()
