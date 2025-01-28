@@ -25,7 +25,7 @@ as used by the radio telescope located at Calvin University.
   The goal is to read data stored in [prefix]_[index].txt, 
 then make a plot for each index, then store those plots as [prefix]_plot_[index].png 
 
-  Besides of being a standalone script, we want to privide a light library for processing
+  Besides of being a standalone script, we want to provide a light library for processing
 readouts from the IFAverage plugin, such that one could customize their processing codes. 
 
   2025/01/25 Resbi & RJGamesAhoy\n"""
@@ -35,6 +35,14 @@ HELP = """-h/--help is a todo ^_^ ."""
 # Initialize those constants. 
 NUM_MP_PROCESS = 8
 DEBUG = 0
+
+
+def sortData(data): 
+    x = data[0] 
+    y = data[1]
+    sortted_index = np.argsort(x) 
+    return [x[sortted_index], y[sortted_index]]
+
 
 def readData(content, debug = 0): 
     content_stripped = content.strip("\n")
@@ -66,7 +74,10 @@ def readOne(file_name, debug = 0):
         file_content = file_open.read() 
         file_open.close() 
         header, data = readData(file_content, debug = debug) 
-        result = [header, np.array(data)]
+        result = [
+            header, 
+            sortData(np.array(data).transpose())
+        ]
     except:
         print("[readOne] Failed on reading {} ...".format(file_name)) 
         result = []
@@ -89,33 +100,54 @@ def filtOut(data, bar, debug = 0):
     return np.array(data_filtted)
 
 
-def sortData(data): 
-    x = data[0] 
-    y = data[1]
-    sortted_index = np.argsort(x) 
-    return [x[sortted_index], y[sortted_index]]
+class Data:
+    def __init__(self, 
+                 file_name = "", 
+                 unit_x = ["frequency", "MHz"], 
+                 unit_y = ["power", "dB"], 
+                 debug = 0): 
+        self.file_name = file_name
+        
+        if (len(file_name)): 
+            self.header, self.data = readOne(file_name, debug = debug)
+        else: 
+            self.header = []
+            self.data = np.array([])
+
+        self.unit_x = unit_x 
+        self.unit_y = unit_y 
+        self.debug = debug
+
+    def ReadData(self, 
+                 file_name): 
+        self.data = readOne(file_name, debug = self.debug) 
+
+    def UnitConvert(self, 
+                    xORy = "x"): 
+        match xORy: 
+            case "x": 
+                print("Unit convert is a todo ^_^ .")
+            case "y": 
+                print("Unit convert is a todo ^_^ .")
+
 
 
 def plotPlot(file_item, debug = DEBUG):
     prefix, index, file_name = file_item 
-    read_out = readOne(file_name, debug = debug) 
+    item = Data(file_name = file_name, 
+                    debug = DEBUG)
         
-    if (len(read_out)): 
-        header, data = read_out
-        #print(data)
-        #data = filtOut(data, 0.05, debug = debug)
-        data_T = sortData(data.transpose()) 
-        #print(data_T)
-
+    if (len(item.data)): 
+        #print(item)
         # plot them
         print("[plotPlot] Saving: {}_plot_{}.png ...".format(prefix, index))
-        plt.plot(data_T[0], data_T[1], linewidth = 0.5) 
-        plt.xlabel("frequency / MHz")
-        plt.ylabel("power / dB")
+        plt.plot(item.data[0], item.data[1], linewidth = 0.5) 
+        plt.xlabel("{} / {}".format(item.unit_x[0], item.unit_x[1]))
+        plt.ylabel("{} / {}".format(item.unit_y[0], item.unit_y[1]))
         #plt.ylim([0.003, 0.03])
         plt.gca().yaxis.set_major_formatter(ticker.FormatStrFormatter('%.6f'))
         plt.subplots_adjust(left = 0.2)
-        plt.title(header[0])
+        plt.title(item.header[0])
         plt.savefig("{}_plot_{}.png".format(prefix, index), dpi = 300)
         plt.close()
     else: 
