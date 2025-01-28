@@ -58,8 +58,12 @@ class RadioConversions():
         wavelengthInMeters = wavelengthInCentimeters / 100
         return wavelengthInMeters
 
-    
-unitConverter = RadioConversions()
-test = unitConverter.frequencyToWavelength(1420.05)
 
-print(test)
+def test(): 
+    unitConverter = RadioConversions()
+    test = unitConverter.frequencyToWavelength(1420.05)
+
+    print(test)
+
+if __name__ == "__main__": 
+    test()
