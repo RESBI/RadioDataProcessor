@@ -1,0 +1,8 @@
+Start of the TODO Document for Ideas/Goals to Accomplish
+
+Ryan
+    - Fully flesh out data conversions package for general use on both axis
+    - Implementation with time charts from stellarium.
+    - Gif Creation Script
+
+Resbi
