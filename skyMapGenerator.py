@@ -8,7 +8,6 @@
 
 import os
 import sys
-import time
 import socket 
 import platform
 
@@ -57,7 +56,7 @@ class skyChartGenerator():
     # \r\n must be sent after every command.
     # commands must be in ASCII formatting before being sent.
 
-    def sendCommandToServer(self, cmd, prterr=True):
+    def sendCommand(self, cmd, prterr=True):
         self.purgeRecieveBuffer()
         self.s.setblocking(1)
         formattedCommand = str(cmd)+'\r\n'
@@ -78,16 +77,19 @@ class skyChartGenerator():
         data = self.s.recv(1024)
         print (data) 
 
+    def generateChart(self, dateTime, name):
+
+        ##TODO Add parsing of DateTime into set commands for the SkyChart Server, so that the time can be precisely set.
+        ##TODO Add movement of the files to a directory in the head directory of RDP, so they can have matching file names to the others.
+        self.sendCommand('SETFOV 330')
+        self.sendCommand('CLEANUPMAP')
+        self.sendCommand('SAVEIMG PNG ' + name)
+        return
 
 def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
-    test.sendCommandToServer('SETFOV 330')
-    test.sendCommandToServer('REDRAW')
-    test.sendCommandToServer('SETFOV 5')
-    test.sendCommandToServer('CLEANUPMAP')
-    test.sendCommandToServer('SJPG')
-    test.sendCommandToServer('SHUTDOWN')
+    test.generateChart(10, "TESTING")
     return
 
 if __name__ == "__main__":
