@@ -18,12 +18,11 @@ class skyChartGenerator():
         match(platform.system()):
             # Sets the location to find the TCP Port from the Cartes Du Ciel server based on system currently used
             case "Windows":
-                tcpPortLocation = 2##open("HKCU\Software\Astro_PC\Ciel\Status\TcpPort",'r')
+                tcpPortLocation = open("HKCU\Software\Astro_PC\Ciel\Status\TcpPort",'r')
             case "Linux":
                 tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
             case "Darwin":
-                print("Creating sky charts is not currently supported on MacOs")
-                sys.exit(0)
+                tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
         
         self.PHOTOLOCATION = (HOMEDIR+'./skychart/tmp')
     
@@ -77,19 +76,22 @@ class skyChartGenerator():
         data = self.s.recv(1024)
         print (data) 
 
-    def generateChart(self, dateTime, name):
+    def generateChart(self, dateTime, fileName, fov = 360):
 
         ##TODO Add parsing of DateTime into set commands for the SkyChart Server, so that the time can be precisely set.
         ##TODO Add movement of the files to a directory in the head directory of RDP, so they can have matching file names to the others.
-        self.sendCommand('SETFOV 330')
+        self.sendCommand('SETFOV ' + str(fov))
         self.sendCommand('CLEANUPMAP')
-        self.sendCommand('SAVEIMG PNG ' + name)
+        self.sendCommand('SAVEIMG PNG ' + fileName)
         return
+    
+    def timeParser(self):
+        pass    
 
 def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
-    test.generateChart(10, "TESTING")
+    test.generateChart(10, "TESTING2", 330)
     return
 
 if __name__ == "__main__":
