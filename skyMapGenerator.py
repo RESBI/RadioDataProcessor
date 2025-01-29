@@ -22,14 +22,18 @@ class skyChartGenerator():
                 HOMEDIR = os.environ["USERPROFILE"]
                 #tcpPortLocation = open("HKCU/Software/Astro_PC/Ciel/Status/TcpPort",'r')
                 self.PHOTOLOCATION = (HOMEDIR + '/AppData/Local/skychart/tmp')
+                self.PROCESSNAME = "skychart.exe"
             case "Linux":
                 HOMEDIR = os.environ["HOME"]
                 #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
                 self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
+                self.PROCESSNAME = "skychart"
+
             case "Darwin":
                 HOMEDIR = os.environ["HOME"]
                 #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
                 self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
+                self.PROCESSNAME = "skychart"
 
         # Read config file
         server_config = []
@@ -54,7 +58,7 @@ class skyChartGenerator():
 
     def isSkyChartRunning(self):
         for proc in psutil.process_iter(['name']):
-            if proc.info['name'] == 'skychart':
+            if proc.info['name'] == self.PROCESSNAME:
                 return True
         return False
 
@@ -112,8 +116,9 @@ def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
     test.generateChart(10, "TESTING2", 330)
-    test.sendCommand('SHUTDOWN')
     print(test.isSkyChartRunning())
+    test.sendCommand('SHUTDOWN')
+
     return
 
 if __name__ == "__main__":
