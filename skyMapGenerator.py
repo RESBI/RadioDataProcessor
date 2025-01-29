@@ -35,7 +35,7 @@ class skyChartGenerator():
 
         self.PHOTOLOCATION = (HOMEDIR+'./skychart/tmp')
     
-        self.HOST = server_config[0]
+        self.HOST = server_config[0].strip("\n")
 
         self.PORT = int(server_config[1]) #tcpPortLocation.read()
 
