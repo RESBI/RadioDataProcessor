@@ -7,9 +7,10 @@
 """
 
 import os
-import sys
 import socket 
 import platform
+import sys
+import psutil
 
 
 class skyChartGenerator():
@@ -36,22 +37,26 @@ class skyChartGenerator():
         for line in config_file.readlines(): 
             server_config.append(line)
         config_file.close()
-    
-        self.HOST = server_config[0].strip("\n") # "localhost"
+        # default = "localhost"
+        self.HOST = server_config[0].strip("\n") 
 
-        self.PORT = int(
-                server_config[1] 
-                #tcpPortLocation.read()
-                #3292
-        )
+        # default = 3292
+        self.PORT = int(server_config[1])
 
-        print(self.PORT)
-        if self.PORT == 0:
-            pass
-        
+
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.connect()
+        except:
+            print("Your SkyMap server is offline. Check configuration or check if SkyMap is open.")
+            print("EXITING.")
+            sys.exit(0)
 
-        self.connect()
+    def isSkyChartRunning(self):
+        for proc in psutil.process_iter(['name']):
+            if proc.info['name'] == 'skychart':
+                return True
+        return False
 
     # function to clear the receive buffer
     def purgeRecieveBuffer(self):
@@ -107,6 +112,8 @@ def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
     test.generateChart(10, "TESTING2", 330)
+    test.sendCommand('SHUTDOWN')
+    print(test.isSkyChartRunning())
     return
 
 if __name__ == "__main__":
