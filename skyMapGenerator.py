@@ -20,24 +20,30 @@ class skyChartGenerator():
             case "Windows":
                 HOMEDIR = os.environ["USERPROFILE"]
                 #tcpPortLocation = open("HKCU/Software/Astro_PC/Ciel/Status/TcpPort",'r')
+                self.PHOTOLOCATION = (HOMEDIR + '/AppData/Local/skychart/tmp')
             case "Linux":
                 HOMEDIR = os.environ["HOME"]
                 #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
+                self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
             case "Darwin":
                 HOMEDIR = os.environ["HOME"]
                 #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
+                self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
 
+        # Read config file
         server_config = []
         config_file = open("skyMapConfig", "r") 
         for line in config_file.readlines(): 
             server_config.append(line)
         config_file.close()
-
-        self.PHOTOLOCATION = (HOMEDIR+'./skychart/tmp')
     
-        self.HOST = server_config[0].strip("\n")
+        self.HOST = server_config[0].strip("\n") # "localhost"
 
-        self.PORT = int(server_config[1]) #tcpPortLocation.read()
+        self.PORT = int(
+                server_config[1] 
+                #tcpPortLocation.read()
+                #3292
+        )
 
         print(self.PORT)
         if self.PORT == 0:
