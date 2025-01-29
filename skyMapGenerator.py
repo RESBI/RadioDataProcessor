@@ -14,21 +14,30 @@ import platform
 
 class skyChartGenerator():
     def __init__(self):
-        HOMEDIR = os.environ["HOME"]
+
         match(platform.system()):
             # Sets the location to find the TCP Port from the Cartes Du Ciel server based on system currently used
             case "Windows":
-                tcpPortLocation = open("HKCU\Software\Astro_PC\Ciel\Status\TcpPort",'r')
+                HOMEDIR = os.environ["USERPROFILE"]
+                #tcpPortLocation = open("HKCU/Software/Astro_PC/Ciel/Status/TcpPort",'r')
             case "Linux":
-                tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
+                HOMEDIR = os.environ["HOME"]
+                #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
             case "Darwin":
-                tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
-        
+                HOMEDIR = os.environ["HOME"]
+                #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
+
+        server_config = []
+        config_file = open("skyMapConfig", "r") 
+        for line in config_file.readlines(): 
+            server_config.append(line)
+        config_file.close()
+
         self.PHOTOLOCATION = (HOMEDIR+'./skychart/tmp')
     
-        self.HOST = 'localhost'
+        self.HOST = server_config[0]
 
-        self.PORT = int(tcpPortLocation.read())
+        self.PORT = int(server_config[1]) #tcpPortLocation.read()
 
         print(self.PORT)
         if self.PORT == 0:
