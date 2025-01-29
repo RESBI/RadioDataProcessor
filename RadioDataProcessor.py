@@ -19,7 +19,7 @@ import argparse
 MESSAGE = """
                                 RadioDataProcessor(RDP) 
 
-  RDP a set of scripts that processing readouts from the IFAverage plugin for SDR# 
+  RDP is a set of scripts that processing readouts from the IFAverage plugin for SDR# 
 as used by the radio telescope located at Calvin University. 
 
   The goal is to read data stored in [prefix]_[index].txt, 
@@ -204,6 +204,12 @@ if __name__ == "__main__":
 
     if (prefix == 0): 
         prefix = input("You haven't specified a prefix, please input file prefix ([prefix]_xxxx.txt): \n>")
+
+    print("Please input latitude in format of degree, minute, second (e.g. 42d30m00s -> 42,30,00): ")
+    latitude_raw = input(">")
+    print("Please input longitude in format of degree, minute, second (e.g. 85d30m00s -> 85,30,00): ")
+    longitude_raw = input(">")
+
     time_begin = time.time()
 
     # Search files... 
