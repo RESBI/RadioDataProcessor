@@ -7,7 +7,13 @@
     2025/01/25 Resbi & RJGamesAhoy
 """
 
+
 import multiprocessing
+import matplotlib
+
+if __name__ == "__main__":
+    # use Agg backend for non-interactive plotting
+    matplotlib.use('Agg')  # Must come before pyplot import
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
