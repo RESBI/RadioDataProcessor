@@ -37,7 +37,7 @@ readouts from the IFAverage plugin, such that one could customize their processi
 
   2025/01/25 Resbi & RJGamesAhoy\n"""
 
-HELP = """-h/--help is a todo ^_^ ."""
+HELP = """You called help, then I'm here."""
 
 # Initialize those constants. 
 NUM_MP_PROCESS = 8
