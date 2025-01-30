@@ -37,7 +37,7 @@ class skyChartGenerator():
 
         # Read config file
         server_config = []
-        config_file = open("skyMapConfig", "r") 
+        config_file = open("skyMap.config", "r") 
         for line in config_file.readlines(): 
             server_config.append(line)
         config_file.close()
