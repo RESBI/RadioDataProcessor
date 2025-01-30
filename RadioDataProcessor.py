@@ -13,6 +13,7 @@ import matplotlib
 
 if __name__ == "__main__":
     # use Agg backend for non-interactive plotting
+    # makes 20% faster
     matplotlib.use('Agg')  # Must come before pyplot import
 
 import matplotlib.pyplot as plt
@@ -128,13 +129,16 @@ class Data:
                  file_name): 
         self.data = readOne(file_name, debug = self.debug) 
 
-    def UnitConvert(self, 
-                    xORy = "x"): 
-        match xORy: 
-            case "x": 
-                print("Unit convert is a todo ^_^ .")
-            case "y": 
-                print("Unit convert is a todo ^_^ .")
+    def UnitConvert(self, xORy="x"):
+        match xORy:
+            case "x":
+                # Add conversion logic here
+                print("X unit conversion placeholder")
+            case "y":
+                # Add conversion logic here 
+                print("Y unit conversion placeholder")
+            case _:  # Default case
+                print("Invalid conversion target: {}".format(xORy))
 
 
 # Besides of being our workout, this part is kind of like an example.
@@ -250,21 +254,22 @@ if __name__ == "__main__":
         config_parser.read(args.config_file)
         
         for item_name in config_parser["RDP"]:
-            if item_name == "prefix":
-                prefix = config_parser["RDP"][item_name]
-            elif item_name == "num_threads":
-                NUM_MP_PROCESS = int(config_parser["RDP"][item_name])
-            elif item_name == "debug":
-                DEBUG = int(config_parser["RDP"][item_name])
-            elif item_name == "chart_enable":
-                chart_enable = int(config_parser["RDP"][item_name])
-            elif item_name == "latitude":
-                latitude_raw = config_parser["RDP"][item_name]
-            elif item_name == "longitude":
-                longitude_raw = config_parser["RDP"][item_name]
-            elif item_name == "altitude":
-                altitude_raw = config_parser["RDP"][item_name]
-
+            # Uses match for better performance and readability.
+            match item_name:
+                case "prefix":
+                    prefix = config_parser["RDP"]["prefix"]
+                case "num_threads":
+                    NUM_MP_PROCESS = int(config_parser["RDP"]["num_threads"])
+                case "debug":
+                    DEBUG = int(config_parser["RDP"]["debug"])
+                case "chart_enable":
+                    chart_enable = int(config_parser["RDP"]["chart_enable"])
+                case "latitude":
+                    latitude_raw = config_parser["RDP"]["latitude"]
+                case "longitude":
+                    longitude_raw = config_parser["RDP"]["longitude"]
+                case "altitude":
+                    altitude_raw = config_parser["RDP"]["altitude"]
 
     if (args.prefix): 
         prefix = args.prefix 
@@ -318,7 +323,7 @@ if __name__ == "__main__":
 
     time_begin = time.time()
 
-    # Search files... 
+    # Search sequentially for files... 
     while (file_exist_flag): 
         # data : [header, [f1, p1], [f2, p2], ...]
         file_name = "{}_{:04d}.txt".format(prefix, index)
