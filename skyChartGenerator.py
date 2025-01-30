@@ -106,13 +106,13 @@ class skyChartGenerator():
         print (data) 
 
     def generateChart(self, dateTime, fileName, fov = 360):
-        parsedTime = self.timeParser(dateTime)
         ##TODO Add parsing of DateTime into set commands for the SkyChart Server, so that the time can be precisely set.
         ##TODO Add movement of the files to a directory in the head directory of RDP, so they can have matching file names to the others.
-        self.sendCommand('SETDATE 1999-1-28T01:22:15')
+        parsedTime = self.timeParser(dateTime)
+        self.sendCommand(f'SETDATE {parsedTime}')
         self.sendCommand('SETFOV ' + str(fov))
         self.sendCommand('CLEANUPMAP')
-        self.sendCommand('SAVEIMG PNG ' + fileName)
+        self.sendCommand(f'SAVEIMG PNG {fileName}')
         self.movePhotos(fileName)
         return
     
@@ -126,8 +126,7 @@ class skyChartGenerator():
     def timeParser(self, time):
         # SDR SHARP FORMAT - 1/25/2025 1:22:23 PM (Exmaple)
         # takes time from SDR# output, converts to format for skychart
-
-        timePlaces = {0:"month", 1:"day", 2:"year", 3:"hours", 4:"minutes", 5:"seconds", 6:"AM/PM"}
+        # Skychart format = YYYY-MM-DDTHH:MM:SS
 
         timeList = []
 
@@ -138,18 +137,20 @@ class skyChartGenerator():
         while notParsed:
             currentCharacter = time[selection]
             if currentCharacter == 'P':
-                timeList.append(["PM"])
+                timeList.append("PM")
                 break
             elif currentCharacter == 'A':
-                timeList.append(["AM"])
+                timeList.append("AM")
                 break
             elif (currentCharacter != "/") & (currentCharacter != ":") & (currentCharacter != " "):
                 currentList.append(currentCharacter)
             else:
                 if len(timeList) == 2:
+                    # Length required a change for the year value.
                     length = 4
                 else:
                     length = 2
+    
                 if len(currentList) != length:
                     temp = currentList[0]
                     currentList[0] = '0'
@@ -159,19 +160,42 @@ class skyChartGenerator():
                 currentList = []
     
             selection += 1
-            print(currentList)
-            
-        return timeList
+        
+        if timeList[6] == 'PM':
+            # adjustments for AM/PM - > 24hr time
+            if timeList[3] != ['1', '2']:
+                timeList[3][0] = str(int(timeList[3][0]) + 1)
+                timeList[3][1] = str(int(timeList[3][1]) + 2)
+        elif timeList[6] == 'AM':
+            if timeList[3] == ['1', '2']:
+                timeList[3][0] = '0'
+                timeList[3][1] = '0'
+        
+        timeList.pop(6)
+
+        finalTime = ""
+
+        # reshuffles order of date and time
+        for daysUnit in [2, 0, 1]:
+            for digit in timeList[daysUnit]:
+                finalTime += digit
+            if daysUnit != 1:
+                finalTime += "-"
+        finalTime += "T"
+        for timeUnit in [3, 4, 5]:
+            for digit in timeList[timeUnit]:
+                finalTime += digit
+            if timeUnit != 5:
+                finalTime += ":"
+        
+        return finalTime
         
         
 
 def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
-    # test.generateChart(10, "TESTING2", 330)
-    #test.sendCommand('SHUTDOWN')
-    time = test.timeParser("1/25/2025 1:22:23 PM")
-    print(time)
+    test.generateChart("1/25/2025 11:22:23 PM", "TESTING2", 330)
     return
 
 if __name__ == "__main__":
