@@ -28,7 +28,7 @@ MESSAGE = """
   RDP is a set of scripts that processing readouts from the IFAverage plugin for SDR# 
 as used by the radio telescope located at Calvin University. 
 
-  The goal is to read data stored in [prefix]_[index].txt, 
+  Our goal is to read data stored in [prefix]_[index].txt, 
 then make a plot for each index, then store those plots as [prefix]_plot_[index].png 
 
   Besides of being a standalone script, we want to provide a light library for processing
@@ -137,11 +137,18 @@ class Data:
                 print("Unit convert is a todo ^_^ .")
 
 
+# Besides of being our workout, this part is kind of like an example.
+# Here begin our example.
 
-def plotPlot(file_item, debug = DEBUG):
+# We independent this function to parallelize the process.
+def plotPlot(config):
+    file_item = config[0]
+    chart_config = config[1]
+    debug = config[2]
+
     prefix, index, file_name = file_item 
     item = Data(file_name = file_name, 
-                    debug = DEBUG)
+                    debug = debug)
         
     if (len(item.data)): 
         #print(item)
@@ -157,24 +164,39 @@ def plotPlot(file_item, debug = DEBUG):
         plt.savefig("{}_plot_{}.png".format(prefix, index), dpi = 300)
         plt.close()
     else: 
-        print("[plotPlot] Failed: {} !".format(file_name))
+        print("[plotPlot] Failed on {} \n\tNo data found !".format(file_name))
 
-
-# Besides of being our workout, this part is kind of like an example.
 if __name__ == "__main__": 
+    import configparser
+    
     print(MESSAGE)
 
     data = np.array([1])
-    file_list = []
+    config_list = []
     index = 1
+
+    # Set them 0 for not specified.
     prefix = 0
+    chart_enable = 0
+    latitude_raw = 0
+    longitude_raw = 0
+    altitude_raw = 0
+
     file_exist_flag = 1
 
     # Get args 
     arg_parser = argparse.ArgumentParser(description = HELP) 
 
     arg_parser.add_argument(
-        "-p", "--prefix", 
+        "-f",
+        "--config_file", 
+        type = str,
+        help = "Specify a config file."
+    )
+
+    arg_parser.add_argument(
+        "-p", 
+        "--prefix", 
         type = str,
         help = "Specify a prefix."
     ) 
@@ -187,6 +209,34 @@ if __name__ == "__main__":
     ) 
     
     arg_parser.add_argument(
+        "-c", 
+        "--chart_enable", 
+        type = int, 
+        help = "Specify whether to enable the chart."
+    ) 
+
+    arg_parser.add_argument(
+        "-lat", 
+        "--latitude", 
+        type = str, 
+        help = "Specify latitude of the telescope."
+    ) 
+
+    arg_parser.add_argument(
+        "-lon", 
+        "--longitude", 
+        type = str, 
+        help = "Specify longitude of the telescope."
+    )
+
+    arg_parser.add_argument(
+        "-alt", 
+        "--altitude", 
+        type = str, 
+        help = "Specify altitude of the telescope."
+    )
+
+    arg_parser.add_argument(
         "-d", 
         "--debug", 
         type = int, 
@@ -195,26 +245,76 @@ if __name__ == "__main__":
 
     args = arg_parser.parse_args()
 
+    if (args.config_file):
+        config_parser = configparser.ConfigParser()
+        config_parser.read(args.config_file)
+        
+        for item_name in config_parser["RDP"]:
+            if item_name == "prefix":
+                prefix = config_parser["RDP"][item_name]
+            elif item_name == "num_threads":
+                NUM_MP_PROCESS = int(config_parser["RDP"][item_name])
+            elif item_name == "debug":
+                DEBUG = int(config_parser["RDP"][item_name])
+            elif item_name == "chart_enable":
+                chart_enable = int(config_parser["RDP"][item_name])
+            elif item_name == "latitude":
+                latitude_raw = config_parser["RDP"][item_name]
+            elif item_name == "longitude":
+                longitude_raw = config_parser["RDP"][item_name]
+            elif item_name == "altitude":
+                altitude_raw = config_parser["RDP"][item_name]
+
+
     if (args.prefix): 
         prefix = args.prefix 
-        print("You've specified the prefix: {}".format(prefix)) 
 
     if (args.num_threads): 
         NUM_MP_PROCESS = args.num_threads 
-        print("You've specified to run {} processes. ".format(NUM_MP_PROCESS)) 
 
     if (args.debug):
         DEBUG = args.debug 
-        print("You've enable the program to show debug info. ")
 
+    if (args.chart_enable):
+        chart_enable = args.chart_enable
 
+    if (args.latitude):
+        latitude_raw = args.latitude
+
+    if (args.longitude):
+        longitude_raw = args.longitude
+
+    if (args.altitude):
+        altitude_raw = args.altitude
+
+    # If not specified, ask for them.
     if (prefix == 0): 
-        prefix = input("You haven't specified a prefix, please input file prefix ([prefix]_xxxx.txt): \n>")
+        print("You haven't specified a prefix, please input file prefix ([prefix]_xxxx.txt): ")
+        prefix = input(">")
+        
+    if (chart_enable):
+        # Ask for location if skychart is enabled.
+        if (latitude_raw == 0):    
+            print("Please input latitude in format of degree, minute, second (e.g. 42d30m00s -> 42,30,00): ")
+            latitude_raw = input(">")
+            
+        if (longitude_raw == 0):
+            print("Please input longitude in format of degree, minute, second (e.g. 85d30m00s -> 85,30,00): ")
+            longitude_raw = input(">")
 
-    print("Please input latitude in format of degree, minute, second (e.g. 42d30m00s -> 42,30,00): ")
-    latitude_raw = input(">")
-    print("Please input longitude in format of degree, minute, second (e.g. 85d30m00s -> 85,30,00): ")
-    longitude_raw = input(">")
+        if (altitude_raw == 0):
+            print("Please input altitude in format of meter (e.g. 1048.576m -> 1048.576): ")
+            altitude_raw = input(">")
+
+    print("Configurations:")
+    print("\tPrefix: {}".format(prefix))
+    print("\tNumber of threads: {}".format(NUM_MP_PROCESS))
+    print("\tShow debug info? {}".format("Yes" if DEBUG == 1 else "No"))
+    print("\tGenerate skychart? {}".format("Yes" if chart_enable == 1 else "No"))
+    if (chart_enable):
+        print("\tLatitude: {}".format(latitude_raw))
+        print("\tLongitude: {}".format(longitude_raw))
+        print("\tAltitude: {}".format(altitude_raw))
 
     time_begin = time.time()
 
@@ -231,7 +331,13 @@ if __name__ == "__main__":
         
         if (file_exist_flag): 
             print("[main] Found: {} ...".format(file_name))
-            file_list.append([prefix, index, file_name])
+            config_list.append(
+                [
+                    [prefix, index, file_name], 
+                    [chart_enable, latitude_raw, longitude_raw, altitude_raw], 
+                    DEBUG
+                ]
+            )
 
         index += 1
 
@@ -240,7 +346,7 @@ if __name__ == "__main__":
     # Plot them
     print("[main] Begin to plot, paralleled in {} processes...".format(NUM_MP_PROCESS))
     with multiprocessing.Pool(NUM_MP_PROCESS) as p: 
-        p.map(plotPlot, file_list)
+        p.map(plotPlot, config_list)
 
     time_end = time.time() 
     print("[main] Cost {} seconds.".format(time_end - time_begin))
