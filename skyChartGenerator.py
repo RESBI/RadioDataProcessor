@@ -11,6 +11,7 @@ import socket
 import platform
 import sys
 import psutil
+import shutil
 
 
 class skyChartGenerator():
@@ -20,18 +21,15 @@ class skyChartGenerator():
             # Sets the location to find the TCP Port from the Cartes Du Ciel server based on system currently used
             case "Windows":
                 HOMEDIR = os.environ["USERPROFILE"]
-                #tcpPortLocation = open("HKCU/Software/Astro_PC/Ciel/Status/TcpPort",'r')
                 self.PHOTOLOCATION = (HOMEDIR + '/AppData/Local/skychart/tmp')
                 self.PROCESSNAME = "skychart.exe"
             case "Linux":
                 HOMEDIR = os.environ["HOME"]
-                #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
                 self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
                 self.PROCESSNAME = "skychart"
 
             case "Darwin":
                 HOMEDIR = os.environ["HOME"]
-                #tcpPortLocation = open(HOMEDIR+'/.skychart/tmp/tcpport','r')
                 self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
                 self.PROCESSNAME = "skychart"
 
@@ -44,17 +42,24 @@ class skyChartGenerator():
         # default = "localhost"
         self.HOST = server_config[0].strip("\n") 
 
-        # default = 3292
         self.PORT = int(server_config[1])
 
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+        if self.isSkyChartRunning() != True:
+            print("Your SkyChart is not open. Please open it before using this feature.")
+            print("EXITING.")
+            sys.exit(0)
         try:
             self.connect()
         except:
-            print("Your SkyMap server is offline. Check configuration or check if SkyMap is open.")
+            print("Your SkyChart server is offline. Check configuration to see if the server is set to a different port or is disabled.")
             print("EXITING.")
             sys.exit(0)
+
+        
 
     def isSkyChartRunning(self):
         for proc in psutil.process_iter(['name']):
@@ -101,23 +106,32 @@ class skyChartGenerator():
         print (data) 
 
     def generateChart(self, dateTime, fileName, fov = 360):
-
+        parsedTime = self.timeParser(dateTime)
         ##TODO Add parsing of DateTime into set commands for the SkyChart Server, so that the time can be precisely set.
         ##TODO Add movement of the files to a directory in the head directory of RDP, so they can have matching file names to the others.
+        self.sendCommand('SETDATE 1999-1-28T01:22:15')
         self.sendCommand('SETFOV ' + str(fov))
         self.sendCommand('CLEANUPMAP')
         self.sendCommand('SAVEIMG PNG ' + fileName)
+        self.movePhotos(fileName)
         return
     
-    def timeParser(self):
+    def movePhotos(self, fileName):
+        # Takes photos from the temp directory in skycharts files, and moves them to the folder that this script is being ran within
+        destination = str(os.getcwd()) + '/Output/' + fileName + ".png"
+        source = self.PHOTOLOCATION + '/' + fileName + ".png"
+        shutil.move(source, destination)
+        return
+
+    def timeParser(self, unformattedTime):
+        # takes time from SDR# output, converts to format for skychart
         pass    
 
 def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
     test.generateChart(10, "TESTING2", 330)
-    print(test.isSkyChartRunning())
-    test.sendCommand('SHUTDOWN')
+    #test.sendCommand('SHUTDOWN')
 
     return
 
