@@ -12,7 +12,7 @@ import platform
 import sys
 import psutil
 import shutil
-
+import time
 
 class skyChartGenerator():
     def __init__(self):
@@ -59,7 +59,8 @@ class skyChartGenerator():
             print("EXITING.")
             sys.exit(0)
 
-        
+        # Default window size.
+        self.setWindowSize(1440, 1920)
 
     def isSkyChartRunning(self):
         for proc in psutil.process_iter(['name']):
@@ -103,17 +104,28 @@ class skyChartGenerator():
     def connect(self):
         self.s.connect((self.HOST, self.PORT))
         data = self.s.recv(1024)
-        print (data) 
+        # print (data) - Uncomment for Debug
 
-    def generateChart(self, dateTime, fileName, fov = 360):
-        ##TODO Add parsing of DateTime into set commands for the SkyChart Server, so that the time can be precisely set.
-        ##TODO Add movement of the files to a directory in the head directory of RDP, so they can have matching file names to the others.
+    def generateChart(self, dateTime, fileName, fov = 330, height = 1440, width = 1920):
         parsedTime = self.timeParser(dateTime)
         self.sendCommand(f'SETDATE {parsedTime}')
         self.sendCommand('SETFOV ' + str(fov))
         self.sendCommand('CLEANUPMAP')
         self.sendCommand(f'SAVEIMG PNG {fileName}')
         self.movePhotos(fileName)
+        return
+    
+    def setWindowSize(self, height, width):
+        # Height and Width in pixels
+        self.sendCommand(f'RESIZE {width} {height}')
+        self.sendCommand('CLEANUPMAP')
+        return
+
+    def setObservatory(self, latitude = "+42d55m42s", longitude="+85d32m50s", altitude="790", name = "United States - Michigan/Calvin_University"):
+        # I have no explanation to why this requires two identical commands to actually change the name of the observatory.
+        self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
+        self.sendCommand('CLEANUPMAP')
+        self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
         return
     
     def movePhotos(self, fileName):
@@ -194,8 +206,13 @@ class skyChartGenerator():
 
 def test():
     print("This is in TESTING MODE.")
+    time_start = time.time()
     test = skyChartGenerator()
+    test.setObservatory()
     test.generateChart("1/25/2025 11:22:23 PM", "TESTING2", 330)
+    time_end = time.time()
+    print("[main] Cost {} seconds.".format(time_end - time_start))
+    
     return
 
 if __name__ == "__main__":
