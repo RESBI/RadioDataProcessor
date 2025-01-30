@@ -8,13 +8,13 @@ import os, sys
 
 def deleteFiles(fileList):
     for file in fileList:
-        os.remove(file)
+        os.remove(os.getcwd() + '/Output/' + file)
     return
 
 def scanForPng():
     toDelete = []
     currentDirectory = str(os.getcwd())
-    for file in os.listdir(currentDirectory):
+    for file in os.listdir(currentDirectory + '/Output/'):
         if ".png" in file:
             toDelete.append(file)
     if toDelete == []:
@@ -24,7 +24,7 @@ def scanForPng():
 
 
 def main():
-    print("Deleting all PNG files in " + str(os.getcwd()))
+    print("Deleting all PNG files in " + str(os.getcwd() + '/Output/'))
     filesToDelete = scanForPng()
     deleteFiles(filesToDelete)
     print("All Done!")

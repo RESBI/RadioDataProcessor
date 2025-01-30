@@ -123,16 +123,55 @@ class skyChartGenerator():
         shutil.move(source, destination)
         return
 
-    def timeParser(self, unformattedTime):
+    def timeParser(self, time):
+        # SDR SHARP FORMAT - 1/25/2025 1:22:23 PM (Exmaple)
         # takes time from SDR# output, converts to format for skychart
-        pass    
+
+        timePlaces = {0:"month", 1:"day", 2:"year", 3:"hours", 4:"minutes", 5:"seconds", 6:"AM/PM"}
+
+        timeList = []
+
+        notParsed = True
+        selection = 0
+        currentList = []
+
+        while notParsed:
+            currentCharacter = time[selection]
+            if currentCharacter == 'P':
+                timeList.append(["PM"])
+                break
+            elif currentCharacter == 'A':
+                timeList.append(["AM"])
+                break
+            elif (currentCharacter != "/") & (currentCharacter != ":") & (currentCharacter != " "):
+                currentList.append(currentCharacter)
+            else:
+                if len(timeList) == 2:
+                    length = 4
+                else:
+                    length = 2
+                if len(currentList) != length:
+                    temp = currentList[0]
+                    currentList[0] = '0'
+                    currentList.append(temp)
+
+                timeList.append(currentList)
+                currentList = []
+    
+            selection += 1
+            print(currentList)
+            
+        return timeList
+        
+        
 
 def test():
     print("This is in TESTING MODE.")
     test = skyChartGenerator()
-    test.generateChart(10, "TESTING2", 330)
+    # test.generateChart(10, "TESTING2", 330)
     #test.sendCommand('SHUTDOWN')
-
+    time = test.timeParser("1/25/2025 1:22:23 PM")
+    print(time)
     return
 
 if __name__ == "__main__":
