@@ -166,7 +166,7 @@ def plotPlot(config):
         # plot them
         output_file_name = "{}_plot_{}.png".format(prefix, index)
         output_file_path = "{}/{}".format(output_dir, output_file_name)
-        
+
         print("[plotPlot] Saving: {} ...".format(output_file_path))
         plt.plot(item.data[0], item.data[1], linewidth = 0.5) 
         plt.xlabel("{} / {}".format(item.unit_x[0], item.unit_x[1]))
@@ -353,15 +353,15 @@ if __name__ == "__main__":
     if (chart_enable):
         # Ask for location if skychart is enabled.
         if (latitude_raw == 0):    
-            print("Please input latitude in format of degree, minute, second (e.g. 42d30m00s -> 42,30,00): ")
+            print("Please input latitude (e.g. +42d55m42s): ")
             latitude_raw = input(">")
             
         if (longitude_raw == 0):
-            print("Please input longitude in format of degree, minute, second (e.g. 85d30m00s -> 85,30,00): ")
+            print("Please input longitude (e.g. +85d32m50s): ")
             longitude_raw = input(">")
 
         if (altitude_raw == 0):
-            print("Please input altitude in format of meter (e.g. 1048.576m -> 1048.576): ")
+            print("Please input altitude in format of meter (e.g. 790.0m -> 790.0): ")
             altitude_raw = input(">")
 
     print("Configurations:")
