@@ -164,7 +164,8 @@ def plotPlot(config):
     if (len(item.data)): 
         #print(item)
         # plot them
-        print("[plotPlot] Saving: {}_plot_{}.png ...".format(prefix, index))
+        output_file_path = "{}/{}_plot_{}.png".format(output_dir, prefix, index)
+        print("[plotPlot] Saving: {} ...".format(output_file_path))
         plt.plot(item.data[0], item.data[1], linewidth = 0.5) 
         plt.xlabel("{} / {}".format(item.unit_x[0], item.unit_x[1]))
         plt.ylabel("{} / {}".format(item.unit_y[0], item.unit_y[1]))
@@ -172,7 +173,7 @@ def plotPlot(config):
         plt.gca().yaxis.set_major_formatter(ticker.FormatStrFormatter('%.6f'))
         plt.subplots_adjust(left = 0.2)
         plt.title(item.header[0])
-        plt.savefig("{}/{}_plot_{}.png".format(output_dir, prefix, index), dpi = 300)
+        plt.savefig(output_file_path, dpi = 300)
         plt.close()
     else: 
         print("[plotPlot] Failed on {} \n\tNo data found !".format(file_path))
@@ -187,8 +188,10 @@ if __name__ == "__main__":
     config_list = []
     index = 1
 
-    # Set them 0 for not specified.
+    # Default config file.
     config_file = "./RDP.config"
+    
+    # Set them 0 for not specified.
     input_dir = 0
     output_dir = 0
     prefix = 0
