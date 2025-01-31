@@ -164,7 +164,9 @@ def plotPlot(config):
     if (len(item.data)): 
         #print(item)
         # plot them
-        output_file_path = "{}/{}_plot_{}.png".format(output_dir, prefix, index)
+        output_file_name = "{}_plot_{}.png".format(prefix, index)
+        output_file_path = "{}/{}".format(output_dir, output_file_name)
+        
         print("[plotPlot] Saving: {} ...".format(output_file_path))
         plt.plot(item.data[0], item.data[1], linewidth = 0.5) 
         plt.xlabel("{} / {}".format(item.unit_x[0], item.unit_x[1]))
@@ -190,7 +192,7 @@ if __name__ == "__main__":
 
     # Default config file.
     config_file = "./RDP.config"
-    
+
     # Set them 0 for not specified.
     input_dir = 0
     output_dir = 0
