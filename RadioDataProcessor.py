@@ -70,24 +70,28 @@ def readData(content, debug = 0):
     return [header, data]
 
 
-def readOne(file_name, debug = 0): 
+def readOne(file_path, debug = 0): 
     data = []
         
+
     if debug:
-        print("[readOne] Trying to read {} ...".format(file_name)) 
+        print("[readOne] Trying to read {} ...".format(file_path)) 
     
+
     try: 
-        file_open = open(file_name, "r") 
+        file_open = open(file_path, "r") 
         file_content = file_open.read() 
         file_open.close() 
         header, data = readData(file_content, debug = debug) 
+
         result = [
             header, 
             sortData(np.array(data).transpose())
         ]
     except:
-        print("[readOne] Failed on reading {} ...".format(file_name)) 
+        print("[readOne] Failed on reading {} ...".format(file_path)) 
         result = []
+
 
     if debug:
         print("[readOne] {} points in total!".format(len(data)))
@@ -109,14 +113,15 @@ def filtOut(data, bar, debug = 0):
 
 class Data:
     def __init__(self, 
-                 file_name = "", 
+                 file_path = "", 
                  unit_x = ["frequency", "MHz"], 
                  unit_y = ["power", "dB"], 
                  debug = 0): 
-        self.file_name = file_name
+
+        self.file_path = file_path
         
-        if (len(file_name)): 
-            self.header, self.data = readOne(file_name, debug = debug)
+        if (len(file_path)): 
+            self.header, self.data = readOne(file_path, debug = debug)
         else: 
             self.header = []
             self.data = np.array([])
@@ -125,9 +130,11 @@ class Data:
         self.unit_y = unit_y 
         self.debug = debug
 
+
     def ReadData(self, 
-                 file_name): 
-        self.data = readOne(file_name, debug = self.debug) 
+                 file_path): 
+        self.data = readOne(file_path, debug = self.debug) 
+
 
     def UnitConvert(self, xORy="x"):
         match xORy:
@@ -150,10 +157,10 @@ def plotPlot(config):
     chart_config = config[1]
     debug = config[2]
 
-    prefix, index, file_name = file_item 
-    item = Data(file_name = file_name, 
+    prefix, index, file_path, input_dir, output_dir = file_item 
+    item = Data(file_path = file_path, 
                     debug = debug)
-        
+
     if (len(item.data)): 
         #print(item)
         # plot them
@@ -165,10 +172,11 @@ def plotPlot(config):
         plt.gca().yaxis.set_major_formatter(ticker.FormatStrFormatter('%.6f'))
         plt.subplots_adjust(left = 0.2)
         plt.title(item.header[0])
-        plt.savefig("{}_plot_{}.png".format(prefix, index), dpi = 300)
+        plt.savefig("{}/{}_plot_{}.png".format(output_dir, prefix, index), dpi = 300)
         plt.close()
     else: 
-        print("[plotPlot] Failed on {} \n\tNo data found !".format(file_name))
+        print("[plotPlot] Failed on {} \n\tNo data found !".format(file_path))
+
 
 if __name__ == "__main__": 
     import configparser
@@ -180,6 +188,9 @@ if __name__ == "__main__":
     index = 1
 
     # Set them 0 for not specified.
+    config_file = "./RDP.config"
+    input_dir = 0
+    output_dir = 0
     prefix = 0
     chart_enable = 0
     latitude_raw = 0
@@ -204,7 +215,21 @@ if __name__ == "__main__":
         type = str,
         help = "Specify a prefix."
     ) 
+
+    arg_parser.add_argument(
+        "-i",
+        "--input_dir",
+        type = str,
+        help = "Specify the input directory. Default = ./input"
+    )
     
+    arg_parser.add_argument(
+        "-o",
+        "--output_dir",
+        type = str,
+        help = "Specify the output directory. Default = ./output"
+    )
+
     arg_parser.add_argument(
         "-t", 
         "--num_threads", 
@@ -250,12 +275,20 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
 
     if (args.config_file):
+        config_file = args.config_file
+
+    # Read config file first. 
+    if (config_file):
         config_parser = configparser.ConfigParser()
-        config_parser.read(args.config_file)
+        config_parser.read(config_file)
         
         for item_name in config_parser["RDP"]:
             # Uses match for better performance and readability.
             match item_name:
+                case "input_dir": 
+                    input_dir = config_parser["RDP"]["input_dir"]
+                case "output_dir":
+                    output_dir = config_parser["RDP"]["output_dir"]
                 case "prefix":
                     prefix = config_parser["RDP"]["prefix"]
                 case "num_threads":
@@ -270,6 +303,13 @@ if __name__ == "__main__":
                     longitude_raw = config_parser["RDP"]["longitude"]
                 case "altitude":
                     altitude_raw = config_parser["RDP"]["altitude"]
+
+    # Read args second.
+    if (args.input_dir):
+        input_dir = args.input_dir
+
+    if (args.output_dir):
+        output_dir = args.output_dir
 
     if (args.prefix): 
         prefix = args.prefix 
@@ -296,7 +336,15 @@ if __name__ == "__main__":
     if (prefix == 0): 
         print("You haven't specified a prefix, please input file prefix ([prefix]_xxxx.txt): ")
         prefix = input(">")
-        
+    
+    if (input_dir == 0):
+        print("You haven't specified an data input directory, please input input directory: ")
+        input_dir = input(">")
+
+    if (output_dir == 0):
+        print("You haven't specified an result output directory, please input output directory: ")
+        output_dir = input(">")
+
     if (chart_enable):
         # Ask for location if skychart is enabled.
         if (latitude_raw == 0):    
@@ -312,6 +360,8 @@ if __name__ == "__main__":
             altitude_raw = input(">")
 
     print("Configurations:")
+    print("\tInput directory: {}".format(input_dir))
+    print("\tOutput directory: {}".format(output_dir))
     print("\tPrefix: {}".format(prefix))
     print("\tNumber of threads: {}".format(NUM_MP_PROCESS))
     print("\tShow debug info? {}".format("Yes" if DEBUG == 1 else "No"))
@@ -327,18 +377,20 @@ if __name__ == "__main__":
     while (file_exist_flag): 
         # data : [header, [f1, p1], [f2, p2], ...]
         file_name = "{}_{:04d}.txt".format(prefix, index)
+        file_path = "{}/{}".format(input_dir, file_name)
         try: 
-            file_try = open(file_name, "r") 
+            file_try = open(file_path, "r") 
+
             file_try.close() 
         except:
             file_exist_flag = 0
             index -= 1
         
         if (file_exist_flag): 
-            print("[main] Found: {} ...".format(file_name))
+            print("[main] Found: {} ...".format(file_path))
             config_list.append(
                 [
-                    [prefix, index, file_name], 
+                    [prefix, index, file_path, input_dir, output_dir], 
                     [chart_enable, latitude_raw, longitude_raw, altitude_raw], 
                     DEBUG
                 ]
