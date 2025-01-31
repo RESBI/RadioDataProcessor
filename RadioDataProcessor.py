@@ -157,7 +157,7 @@ def plotPlot(config):
     chart_config = config[1]
     debug = config[2]
 
-    prefix, index, file_path, input_dir, output_dir = file_item 
+    prefix, index, file_path, input_dir, output_dir, file_name = file_item 
     item = Data(file_path = file_path, 
                     debug = debug)
 
@@ -177,6 +177,19 @@ def plotPlot(config):
         plt.title(item.header[0])
         plt.savefig(output_file_path, dpi = 300)
         plt.close()
+
+        if (chart_config[0]):
+            from skyChartGenerator import skyChartGenerator
+            skychart = skyChartGenerator()
+
+            chart_file_name = "{}_chart_{}".format(prefix, index)
+            chart_file_path = "{}/{}.png".format(output_dir, chart_file_name)
+
+            print("[plotPlot] Generating chart: {}...".format(chart_file_path))
+            chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
+            skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
+            skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
+
     else: 
         print("[plotPlot] Failed on {} \n\tNo data found !".format(file_path))
 
@@ -395,7 +408,7 @@ if __name__ == "__main__":
             print("[main] Found: {} ...".format(file_path))
             config_list.append(
                 [
-                    [prefix, index, file_path, input_dir, output_dir], 
+                    [prefix, index, file_path, input_dir, output_dir, file_name], 
                     [chart_enable, latitude_raw, longitude_raw, altitude_raw], 
                     DEBUG
                 ]
@@ -412,3 +425,13 @@ if __name__ == "__main__":
 
     time_end = time.time() 
     print("[main] Cost {} seconds.".format(time_end - time_begin))
+
+    """
+    if (chart_enable):
+        print("[main] Begin to generate skychart...")
+        for item in config_list:
+            prefix, index, file_path, input_dir, output_dir, file_name = item[0]
+            latitude_raw, longitude_raw, altitude_raw = item[1][1:]
+
+            skyChartGenerator(latitude_raw, longitude_raw, altitude_raw, file_name)
+    """
