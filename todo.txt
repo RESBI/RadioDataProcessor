@@ -6,6 +6,8 @@ Ryan
     - Gif Creation Script
 
 Resbi
-    - Merge skychart generation
+    - Write usage guide.
+    - Merge skychart generation. 
     - Merge unit converting. 
     - Add skychart generating part. 
+
