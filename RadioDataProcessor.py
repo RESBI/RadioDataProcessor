@@ -225,14 +225,14 @@ if __name__ == "__main__":
         "-i",
         "--input_dir",
         type = str,
-        help = "Specify the input directory. Default = ./input"
+        help = "Specify the input directory. Default = ./Input"
     )
     
     arg_parser.add_argument(
         "-o",
         "--output_dir",
         type = str,
-        help = "Specify the output directory. Default = ./output"
+        help = "Specify the output directory. Default = ./Output"
     )
 
     arg_parser.add_argument(
