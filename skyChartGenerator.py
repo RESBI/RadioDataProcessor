@@ -106,13 +106,13 @@ class skyChartGenerator():
         data = self.s.recv(1024)
         # print (data) - Uncomment for Debug
 
-    def generateChart(self, dateTime, fileName, fov = 330, height = 1440, width = 1920):
+    def generateChart(self, dateTime, fileName, destination = str(os.getcwd()) + '/Output/' + fileName + ".png", fov = 330, height = 1440, width = 1920):
         parsedTime = self.timeParser(dateTime)
         self.sendCommand(f'SETDATE {parsedTime}')
         self.sendCommand('SETFOV ' + str(fov))
         self.sendCommand('CLEANUPMAP')
         self.sendCommand(f'SAVEIMG PNG {fileName}')
-        self.movePhotos(fileName)
+        self.movePhotos(fileName, destination = destination)
         return
     
     def setWindowSize(self, height, width):
@@ -128,9 +128,8 @@ class skyChartGenerator():
         self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
         return
     
-    def movePhotos(self, fileName):
+    def movePhotos(self, fileName, destination = str(os.getcwd()) + '/Output/' + fileName + ".png"):
         # Takes photos from the temp directory in skycharts files, and moves them to the folder that this script is being ran within
-        destination = str(os.getcwd()) + '/Output/' + fileName + ".png"
         source = self.PHOTOLOCATION + '/' + fileName + ".png"
         shutil.move(source, destination)
         return
