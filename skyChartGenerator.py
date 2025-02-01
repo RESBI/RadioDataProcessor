@@ -106,7 +106,7 @@ class skyChartGenerator():
         data = self.s.recv(1024)
         # print (data) - Uncomment for Debug
 
-    def generateChart(self, dateTime, fileName, fov = 330, height = 1440, width = 1920, destination = 0):
+    def generateChart(self, dateTime, fileName, fov = 120, height = 1440, width = 1920, destination = 0):
         if (destination == 0):
             destination = str(os.getcwd()) + '/Output/' + fileName + ".png"
         parsedTime = self.timeParser(dateTime)
