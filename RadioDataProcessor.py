@@ -9,6 +9,8 @@
 
 
 import multiprocessing
+import os
+
 import matplotlib
 
 if __name__ == "__main__":
@@ -175,6 +177,10 @@ def plotPlot(config):
         plt.gca().yaxis.set_major_formatter(ticker.FormatStrFormatter('%.6f'))
         plt.subplots_adjust(left = 0.2)
         plt.title(item.header[0])
+
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+
         plt.savefig(output_file_path, dpi = 300)
         plt.close()
 
