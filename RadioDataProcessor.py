@@ -178,9 +178,6 @@ def plotPlot(config):
         plt.subplots_adjust(left = 0.2)
         plt.title(item.header[0])
 
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
-
         plt.savefig(output_file_path, dpi = 300)
         plt.close()
 
@@ -396,6 +393,11 @@ if __name__ == "__main__":
         print("\tLatitude: {}".format(latitude_raw))
         print("\tLongitude: {}".format(longitude_raw))
         print("\tAltitude: {}".format(altitude_raw))
+
+    
+    if not os.path.exists(output_dir):
+        print("[main] Output directory not found, creating...")
+        os.mkdir(output_dir)
 
     time_begin = time.time()
 
