@@ -31,7 +31,7 @@ class skyChartGenerator():
 
             case "Darwin":
                 HOMEDIR = os.environ["HOME"]
-                self.PHOTOLOCATION = (HOMEDIR + '/.skychart/tmp')
+                self.PHOTOLOCATION = (HOMEDIR + '/Library/Application Support/skychart/tmp')
                 self.PROCESSNAME = "skychart"
 
         # Read config file
