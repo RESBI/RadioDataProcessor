@@ -240,19 +240,21 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "-t", 
         "--num_threads", 
-        type = int, 
+        type = str, 
         help = "Specify total number of process to parallelize the process."
     ) 
     
     arg_parser.add_argument(
+        "-pe", 
         "--plot_enable", 
-        type = int, 
+        type = str, 
         help = "Specify whether to enable the plot."
     )
 
     arg_parser.add_argument(
+        "-ce", 
         "--chart_enable", 
-        type = int, 
+        type = str, 
         help = "Specify whether to enable the chart."
     ) 
 
@@ -280,7 +282,7 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "-d", 
         "--debug", 
-        type = int, 
+        type = str, 
         help = "Set the program print debug info or not."
     )
 
@@ -329,16 +331,16 @@ if __name__ == "__main__":
         prefix = args.prefix 
 
     if (args.num_threads): 
-        NUM_MP_PROCESS = args.num_threads 
+        NUM_MP_PROCESS = int(args.num_threads) 
 
     if (args.debug):
-        DEBUG = args.debug 
+        DEBUG = int(args.debug) 
 
     if (args.plot_enable):
-        plot_enable = args.plot_enable
+        plot_enable = int(args.plot_enable)
 
     if (args.chart_enable):
-        chart_enable = args.chart_enable
+        chart_enable = int(args.chart_enable)
 
     if (args.latitude):
         latitude_raw = args.latitude
@@ -441,7 +443,7 @@ if __name__ == "__main__":
             chart_file_name = "{}_chart_{}".format(prefix, index)
             chart_file_path = "{}/{}.png".format(output_dir, chart_file_name)
 
-            print("[plotPlot] Generating chart: {}...".format(chart_file_path))
+            print("[main] Generating chart: {}...".format(chart_file_path))
             chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
