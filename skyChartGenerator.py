@@ -123,11 +123,12 @@ class skyChartGenerator():
         self.sendCommand('CLEANUPMAP')
         return
 
-    def setObservatory(self, latitude = "+42d55m42s", longitude="+85d32m50s", altitude="790", name = "United States - Michigan/Calvin_University"):
+    def setObservatory(self, latitude = "+42d55m42s", longitude="+85d32m50s", altitude="790", name = "United States - Michigan/Calvin_University", timezone = "EST"):
         # I have no explanation to why this requires two identical commands to actually change the name of the observatory.
         self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
         self.sendCommand('CLEANUPMAP')
         self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
+        self.sendCommand(f'SETTZ {timezone}')
         return
     
     def movePhotos(self, fileName, destination = 0):
@@ -149,60 +150,17 @@ class skyChartGenerator():
         selection = 0
         currentList = []
 
-        while notParsed:
-            currentCharacter = time[selection]
-            if currentCharacter == 'P':
-                timeList.append("PM")
-                break
-            elif currentCharacter == 'A':
-                timeList.append("AM")
-                break
-            elif (currentCharacter != "/") & (currentCharacter != ":") & (currentCharacter != " "):
-                currentList.append(currentCharacter)
-            else:
-                if len(timeList) == 2:
-                    # Length required a change for the year value.
-                    length = 4
-                else:
-                    length = 2
-    
-                if len(currentList) != length:
-                    temp = currentList[0]
-                    currentList[0] = '0'
-                    currentList.append(temp)
+        timestamp_split = time.split(" ")
+        date_split = list(map(int, timestamp_split[0].split("/")))
+        time_split = list(map(int, timestamp_split[1].split(":")))
 
-                timeList.append(currentList)
-                currentList = []
-    
-            selection += 1
-        
-        if timeList[6] == 'PM':
-            # adjustments for AM/PM - > 24hr time
-            if timeList[3] != ['1', '2']:
-                timeList[3][0] = str(int(timeList[3][0]) + 1)
-                timeList[3][1] = str(int(timeList[3][1]) + 2)
-        elif timeList[6] == 'AM':
-            if timeList[3] == ['1', '2']:
-                timeList[3][0] = '0'
-                timeList[3][1] = '0'
-        
-        timeList.pop(6)
+        if (time_split[0] == 12):
+            time_split[0] = 0
 
-        finalTime = ""
+        if (timestamp_split[2] == "PM"):
+                time_split[0] += 12
 
-        # reshuffles order of date and time
-        for daysUnit in [2, 0, 1]:
-            for digit in timeList[daysUnit]:
-                finalTime += digit
-            if daysUnit != 1:
-                finalTime += "-"
-        finalTime += "T"
-        for timeUnit in [3, 4, 5]:
-            for digit in timeList[timeUnit]:
-                finalTime += digit
-            if timeUnit != 5:
-                finalTime += ":"
-        
+        finalTime = f"{str(date_split[2]).zfill(4)}-{str(date_split[0]).zfill(2)}-{str(date_split[1]).zfill(2)}T{str(time_split[0]).zfill(2)}:{str(time_split[1]).zfill(2)}:{str(time_split[2]).zfill(2)}"
         return finalTime
         
         
