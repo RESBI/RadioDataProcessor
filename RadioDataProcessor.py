@@ -7,7 +7,6 @@
     2025/01/25 Resbi & RJGamesAhoy
 """
 
-
 import multiprocessing
 import os
 
@@ -22,8 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import time
-import argparse 
-
+import argparse
 
 MESSAGE = """
                                 RadioDataProcessor(RDP) 
@@ -46,14 +44,14 @@ NUM_MP_PROCESS = 8
 DEBUG = 0
 
 
-def sortData(data): 
-    x = data[0] 
+def sortData(data):
+    x = data[0]
     y = data[1]
-    sortted_index = np.argsort(x) 
+    sortted_index = np.argsort(x)
     return [x[sortted_index], y[sortted_index]]
 
 
-def readData(content, debug = 0): 
+def readData(content, debug=0):
     content_stripped = content.strip("\n")
     content_splitted = content_stripped.split("\n")
     data_string = content_splitted[1:]
@@ -61,39 +59,36 @@ def readData(content, debug = 0):
     header_splitted = content_splitted[0].split("  ")
     # header : [datastamp, # of averaged data]
     header = [
-        header_splitted[0], 
+        header_splitted[0],
         int(header_splitted[1].split("Counts:")[1])
     ]
 
-    if debug: 
+    if debug:
         print("[readData] Data header: {}".format(content_splitted[0]))
-        #print("[readData] Data length: {}".format(len(data)))
+        # print("[readData] Data length: {}".format(len(data)))
 
     return [header, data]
 
 
-def readOne(file_path, debug = 0): 
+def readOne(file_path, debug=0):
     data = []
-        
 
     if debug:
-        print("[readOne] Trying to read {} ...".format(file_path)) 
-    
+        print("[readOne] Trying to read {} ...".format(file_path))
 
-    try: 
-        file_open = open(file_path, "r") 
-        file_content = file_open.read() 
-        file_open.close() 
-        header, data = readData(file_content, debug = debug) 
+    try:
+        file_open = open(file_path, "r")
+        file_content = file_open.read()
+        file_open.close()
+        header, data = readData(file_content, debug=debug)
 
         result = [
-            header, 
+            header,
             sortData(np.array(data).transpose())
         ]
     except:
-        print("[readOne] Failed on reading {} ...".format(file_path)) 
+        print("[readOne] Failed on reading {} ...".format(file_path))
         result = []
-
 
     if debug:
         print("[readOne] {} points in total!".format(len(data)))
@@ -101,12 +96,12 @@ def readOne(file_path, debug = 0):
     return result
 
 
-def filtOut(data, bar, debug = 0): 
+def filtOut(data, bar, debug=0):
     data_filtted = []
 
-    for data_line in data: 
-        if data_line[1] < bar: 
-            data_filtted.append(data_line) 
+    for data_line in data:
+        if data_line[1] < bar:
+            data_filtted.append(data_line)
         elif debug:
             print("[filtOut] filtted data: {}".format(data_line))
 
@@ -114,29 +109,27 @@ def filtOut(data, bar, debug = 0):
 
 
 class Data:
-    def __init__(self, 
-                 file_path = "", 
-                 unit_x = ["frequency", "MHz"], 
-                 unit_y = ["power", "dB"], 
-                 debug = 0): 
+    def __init__(self,
+                 file_path="",
+                 unit_x=["frequency", "MHz"],
+                 unit_y=["power", "dB"],
+                 debug=0):
 
         self.file_path = file_path
-        
-        if (len(file_path)): 
-            self.header, self.data = readOne(file_path, debug = debug)
-        else: 
+
+        if (len(file_path)):
+            self.header, self.data = readOne(file_path, debug=debug)
+        else:
             self.header = []
             self.data = np.array([])
 
-        self.unit_x = unit_x 
-        self.unit_y = unit_y 
+        self.unit_x = unit_x
+        self.unit_y = unit_y
         self.debug = debug
 
-
-    def ReadData(self, 
-                 file_path): 
-        self.data = readOne(file_path, debug = self.debug) 
-
+    def ReadData(self,
+                 file_path):
+        self.data = readOne(file_path, debug=self.debug)
 
     def UnitConvert(self, xORy="x"):
         match xORy:
@@ -159,38 +152,34 @@ def plotPlot(config):
     chart_config = config[1]
     debug = config[2]
 
-    prefix, index, file_path, input_dir, output_dir, file_name = file_item 
-    item = Data(file_path = file_path, 
-                    debug = debug)
+    prefix, index, file_path, input_dir, output_dir, file_name = file_item
+    item = Data(file_path=file_path,
+                debug=debug)
 
-    if (len(item.data)): 
-        #print(item)
+    if (len(item.data)):
+        # print(item)
         # plot them
         output_file_name = "{}_plot_{}.png".format(prefix, index)
         output_file_path = "{}/{}".format(output_dir, output_file_name)
 
         print("[plotPlot] Saving: {} ...".format(output_file_path))
-        plt.plot(item.data[0], item.data[1], linewidth = 0.5) 
+        plt.plot(item.data[0], item.data[1], linewidth=0.5)
         plt.xlabel("{} / {}".format(item.unit_x[0], item.unit_x[1]))
         plt.ylabel("{} / {}".format(item.unit_y[0], item.unit_y[1]))
-        #plt.ylim([0.003, 0.03])
+        # plt.ylim([0.003, 0.03])
         plt.gca().yaxis.set_major_formatter(ticker.FormatStrFormatter('%.6f'))
-        plt.subplots_adjust(left = 0.2)
+        plt.subplots_adjust(left=0.2)
         plt.title(item.header[0])
-
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
-
-        plt.savefig(output_file_path, dpi = 300)
+        plt.savefig(output_file_path, dpi=300)
         plt.close()
 
-    else: 
+    else:
         print("[plotPlot] Failed on {} \n\tNo data found !".format(file_path))
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     import configparser
-    
+
     print(MESSAGE)
 
     data = np.array([1])
@@ -213,83 +202,83 @@ if __name__ == "__main__":
     file_exist_flag = 1
 
     # Get args 
-    arg_parser = argparse.ArgumentParser(description = HELP) 
+    arg_parser = argparse.ArgumentParser(description=HELP)
 
     arg_parser.add_argument(
         "-f",
-        "--config_file", 
-        type = str,
-        help = "Specify a config file."
+        "--config_file",
+        type=str,
+        help="Specify a config file."
     )
 
     arg_parser.add_argument(
-        "-p", 
-        "--prefix", 
-        type = str,
-        help = "Specify a prefix."
-    ) 
+        "-p",
+        "--prefix",
+        type=str,
+        help="Specify a prefix."
+    )
 
     arg_parser.add_argument(
         "-i",
         "--input_dir",
-        type = str,
-        help = "Specify the input directory. Default = ./Input"
+        type=str,
+        help="Specify the input directory. Default = ./Input"
     )
-    
+
     arg_parser.add_argument(
         "-o",
         "--output_dir",
-        type = str,
-        help = "Specify the output directory. Default = ./Output"
+        type=str,
+        help="Specify the output directory. Default = ./Output"
     )
 
     arg_parser.add_argument(
-        "-t", 
-        "--num_threads", 
-        type = str, 
-        help = "Specify total number of process to parallelize the process."
-    ) 
-    
-    arg_parser.add_argument(
-        "-pe", 
-        "--plot_enable", 
-        type = str, 
-        help = "Specify whether to enable the plot."
+        "-t",
+        "--num_threads",
+        type=str,
+        help="Specify total number of process to parallelize the process."
     )
 
     arg_parser.add_argument(
-        "-ce", 
-        "--chart_enable", 
-        type = str, 
-        help = "Specify whether to enable the chart."
-    ) 
-
-    arg_parser.add_argument(
-        "-lat", 
-        "--latitude", 
-        type = str, 
-        help = "Specify latitude of the telescope."
-    ) 
-
-    arg_parser.add_argument(
-        "-lon", 
-        "--longitude", 
-        type = str, 
-        help = "Specify longitude of the telescope."
+        "-pe",
+        "--plot_enable",
+        type=str,
+        help="Specify whether to enable the plot."
     )
 
     arg_parser.add_argument(
-        "-alt", 
-        "--altitude", 
-        type = str, 
-        help = "Specify altitude of the telescope."
+        "-ce",
+        "--chart_enable",
+        type=str,
+        help="Specify whether to enable the chart."
     )
 
     arg_parser.add_argument(
-        "-d", 
-        "--debug", 
-        type = str, 
-        help = "Set the program print debug info or not."
+        "-lat",
+        "--latitude",
+        type=str,
+        help="Specify latitude of the telescope."
+    )
+
+    arg_parser.add_argument(
+        "-lon",
+        "--longitude",
+        type=str,
+        help="Specify longitude of the telescope."
+    )
+
+    arg_parser.add_argument(
+        "-alt",
+        "--altitude",
+        type=str,
+        help="Specify altitude of the telescope."
+    )
+
+    arg_parser.add_argument(
+        "-d",
+        "--debug",
+        type=str,
+        help="Set the program print debug info or not."
     )
 
     args = arg_parser.parse_args()
@@ -301,11 +290,11 @@ if __name__ == "__main__":
     if (config_file):
         config_parser = configparser.ConfigParser()
         config_parser.read(config_file)
-        
+
         for item_name in config_parser["RDP"]:
             # Uses match for better performance and readability.
             match item_name:
-                case "input_dir": 
+                case "input_dir":
                     input_dir = config_parser["RDP"]["input_dir"]
                 case "output_dir":
                     output_dir = config_parser["RDP"]["output_dir"]
@@ -333,14 +322,14 @@ if __name__ == "__main__":
     if (args.output_dir):
         output_dir = args.output_dir
 
-    if (args.prefix): 
-        prefix = args.prefix 
+    if (args.prefix):
+        prefix = args.prefix
 
-    if (args.num_threads): 
-        NUM_MP_PROCESS = int(args.num_threads) 
+    if (args.num_threads):
+        NUM_MP_PROCESS = int(args.num_threads)
 
     if (args.debug):
-        DEBUG = int(args.debug) 
+        DEBUG = int(args.debug)
 
     if (args.plot_enable):
         plot_enable = int(args.plot_enable)
@@ -358,10 +347,10 @@ if __name__ == "__main__":
         altitude_raw = args.altitude
 
     # If not specified, ask for them.
-    if (prefix == 0): 
+    if (prefix == 0):
         print("You haven't specified a prefix, please input file prefix ([prefix]_xxxx.txt): ")
         prefix = input(">")
-    
+
     if (input_dir == 0):
         print("You haven't specified an data input directory, please input input directory: ")
         input_dir = input(">")
@@ -372,10 +361,10 @@ if __name__ == "__main__":
 
     if (chart_enable):
         # Ask for location if skychart is enabled.
-        if (latitude_raw == 0):    
+        if (latitude_raw == 0):
             print("Please input latitude (e.g. +42d55m42s): ")
             latitude_raw = input(">")
-            
+
         if (longitude_raw == 0):
             print("Please input longitude (e.g. +85d32m50s): ")
             longitude_raw = input(">")
@@ -397,27 +386,30 @@ if __name__ == "__main__":
         print("\tLongitude: {}".format(longitude_raw))
         print("\tAltitude: {}".format(altitude_raw))
 
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
     time_begin = time.time()
 
     # Search sequentially for files... 
-    while (file_exist_flag): 
+    while (file_exist_flag):
         # data : [header, [f1, p1], [f2, p2], ...]
         file_name = "{}_{:04d}.txt".format(prefix, index)
         file_path = "{}/{}".format(input_dir, file_name)
-        try: 
-            file_try = open(file_path, "r") 
+        try:
+            file_try = open(file_path, "r")
 
-            file_try.close() 
+            file_try.close()
         except:
             file_exist_flag = 0
             index -= 1
-        
-        if (file_exist_flag): 
+
+        if (file_exist_flag):
             print("[main] Found: {} ...".format(file_path))
             config_list.append(
                 [
-                    [prefix, index, file_path, input_dir, output_dir, file_name], 
-                    [chart_enable, latitude_raw, longitude_raw, altitude_raw], 
+                    [prefix, index, file_path, input_dir, output_dir, file_name],
+                    [chart_enable, latitude_raw, longitude_raw, altitude_raw],
                     DEBUG
                 ]
             )
@@ -429,11 +421,12 @@ if __name__ == "__main__":
     if (plot_enable):
         # Plot them
         print("[main] Begin to plot, paralleled in {} processes...".format(NUM_MP_PROCESS))
-        with multiprocessing.Pool(NUM_MP_PROCESS) as p: 
+        with multiprocessing.Pool(NUM_MP_PROCESS) as p:
             p.map(plotPlot, config_list)
 
     if (chart_enable):
         from skyChartGenerator import skyChartGenerator
+
         print("[main] Begin to generate skychart...")
         skychart = skyChartGenerator()
         for config_item in config_list:
@@ -441,10 +434,10 @@ if __name__ == "__main__":
             chart_config = config_item[1]
             debug = config_item[2]
 
-            prefix, index, file_path, input_dir, output_dir, file_name = file_item 
+            prefix, index, file_path, input_dir, output_dir, file_name = file_item
 
-            item = Data(file_path = file_path, 
-                            debug = debug)
+            item = Data(file_path=file_path,
+                        debug=debug)
 
             chart_file_name = "{}_chart_{}".format(prefix, index)
             chart_file_path = "{}/{}.png".format(output_dir, chart_file_name)
@@ -453,7 +446,8 @@ if __name__ == "__main__":
             chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
-            skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
-    
-    time_end = time.time() 
+            skychart.generateChart(item.header[0], chart_file_name, fov=330, height=1440, width=1920,
+                                   destination=chart_file_path)
+
+    time_end = time.time()
     print("[main] Cost {} seconds.".format(time_end - time_begin))
