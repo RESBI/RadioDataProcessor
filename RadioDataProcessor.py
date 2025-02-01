@@ -178,18 +178,6 @@ def plotPlot(config):
         plt.savefig(output_file_path, dpi = 300)
         plt.close()
 
-        if (chart_config[0]):
-            from skyChartGenerator import skyChartGenerator
-            skychart = skyChartGenerator()
-
-            chart_file_name = "{}_chart_{}".format(prefix, index)
-            chart_file_path = "{}/{}.png".format(output_dir, chart_file_name)
-
-            print("[plotPlot] Generating chart: {}...".format(chart_file_path))
-            chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
-            skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
-            skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
-
     else: 
         print("[plotPlot] Failed on {} \n\tNo data found !".format(file_path))
 
@@ -210,6 +198,7 @@ if __name__ == "__main__":
     input_dir = 0
     output_dir = 0
     prefix = 0
+    plot_enable = 1
     chart_enable = 0
     latitude_raw = 0
     longitude_raw = 0
@@ -256,7 +245,12 @@ if __name__ == "__main__":
     ) 
     
     arg_parser.add_argument(
-        "-c", 
+        "--plot_enable", 
+        type = int, 
+        help = "Specify whether to enable the plot."
+    )
+
+    arg_parser.add_argument(
         "--chart_enable", 
         type = int, 
         help = "Specify whether to enable the chart."
@@ -313,6 +307,8 @@ if __name__ == "__main__":
                     NUM_MP_PROCESS = int(config_parser["RDP"]["num_threads"])
                 case "debug":
                     DEBUG = int(config_parser["RDP"]["debug"])
+                case "plot_enable":
+                    plot_enable = int(config_parser["RDP"]["plot_enable"])
                 case "chart_enable":
                     chart_enable = int(config_parser["RDP"]["chart_enable"])
                 case "latitude":
@@ -337,6 +333,9 @@ if __name__ == "__main__":
 
     if (args.debug):
         DEBUG = args.debug 
+
+    if (args.plot_enable):
+        plot_enable = args.plot_enable
 
     if (args.chart_enable):
         chart_enable = args.chart_enable
@@ -383,6 +382,7 @@ if __name__ == "__main__":
     print("\tPrefix: {}".format(prefix))
     print("\tNumber of threads: {}".format(NUM_MP_PROCESS))
     print("\tShow debug info? {}".format("Yes" if DEBUG == 1 else "No"))
+    print("\tGenerate plots? {}".format("Yes" if plot_enable == 1 else "No"))
     print("\tGenerate skychart? {}".format("Yes" if chart_enable == 1 else "No"))
     if (chart_enable):
         print("\tLatitude: {}".format(latitude_raw))
@@ -418,20 +418,34 @@ if __name__ == "__main__":
 
     print("[main] Found {} files in total.".format(index - 1))
 
-    # Plot them
-    print("[main] Begin to plot, paralleled in {} processes...".format(NUM_MP_PROCESS))
-    with multiprocessing.Pool(NUM_MP_PROCESS) as p: 
-        p.map(plotPlot, config_list)
+    if (plot_enable):
+        # Plot them
+        print("[main] Begin to plot, paralleled in {} processes...".format(NUM_MP_PROCESS))
+        with multiprocessing.Pool(NUM_MP_PROCESS) as p: 
+            p.map(plotPlot, config_list)
 
+    if (chart_enable):
+        from skyChartGenerator import skyChartGenerator
+        print("[main] Begin to generate skychart...")
+        skychart = skyChartGenerator()
+        for config_item in config_list:
+            file_item = config_item[0]
+            chart_config = config_item[1]
+            debug = config_item[2]
+
+            prefix, index, file_path, input_dir, output_dir, file_name = file_item 
+
+            item = Data(file_path = file_path, 
+                            debug = debug)
+
+            chart_file_name = "{}_chart_{}".format(prefix, index)
+            chart_file_path = "{}/{}.png".format(output_dir, chart_file_name)
+
+            print("[plotPlot] Generating chart: {}...".format(chart_file_path))
+            chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
+            skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
+            skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
+            skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
+    
     time_end = time.time() 
     print("[main] Cost {} seconds.".format(time_end - time_begin))
-
-    """
-    if (chart_enable):
-        print("[main] Begin to generate skychart...")
-        for item in config_list:
-            prefix, index, file_path, input_dir, output_dir, file_name = item[0]
-            latitude_raw, longitude_raw, altitude_raw = item[1][1:]
-
-            skyChartGenerator(latitude_raw, longitude_raw, altitude_raw, file_name)
-    """
