@@ -125,9 +125,6 @@ class skyChartGenerator():
 
     def setObservatory(self, latitude="+42d55m42s", longitude="+85d32m50s", altitude="790",
                        name="United States - Michigan/Calvin_University", timezone="UTC-5"):
-        # I have no explanation to why this requires several identical commands to actually change the name of the observatory.
-        self.sendCommand(f'SETTZ {timezone}')
-        self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
         self.sendCommand('CLEANUPMAP')
         self.sendCommand(f'SETTZ {timezone}')
         self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
