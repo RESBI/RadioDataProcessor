@@ -73,7 +73,7 @@ def plotPlot(config):
         plt.subplots_adjust(left = 0.2)
         plt.title(item.header[0])
 
-        plt.savefig(output_file_path, dpi = 300)
+        plt.savefig(output_file_path, dpi = 150)
         plt.close()
 
     else: 
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     if (chart_enable):
         from skyChartGenerator import skyChartGenerator
         print("[main] Begin to generate skychart...")
-        skychart = skyChartGenerator()
+        skychart = skyChartGenerator(960, 720)
         for config_item in config_list:
             file_item = config_item[0]
             chart_config = config_item[1]
@@ -350,7 +350,7 @@ if __name__ == "__main__":
             print("[main] Generating chart: {}...".format(chart_file_path))
             chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
-            skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
+            skychart.generateChart(item.header[0], chart_file_name, fov = 330, destination = chart_file_path)
     
     time_end = time.time() 
     print("[main] Cost {} seconds.".format(time_end - time_begin))

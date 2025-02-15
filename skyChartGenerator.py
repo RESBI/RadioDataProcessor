@@ -16,7 +16,7 @@ import time
 
 
 class skyChartGenerator():
-    def __init__(self):
+    def __init__(self, width, height):
 
         match (platform.system()):
             # Sets the location to find the TCP Port from the Cartes Du Ciel server based on system currently used
@@ -60,7 +60,7 @@ class skyChartGenerator():
             sys.exit(0)
 
         # Default window size.
-        self.setWindowSize(1440, 1920)
+        self.setWindowSize(width, height)
 
     def isSkyChartRunning(self):
         for proc in psutil.process_iter(['name']):
@@ -106,7 +106,7 @@ class skyChartGenerator():
         data = self.s.recv(1024)
         # print (data) - Uncomment for Debug
 
-    def generateChart(self, dateTime, fileName, fov=120, height=1440, width=1920, destination=0):
+    def generateChart(self, dateTime, fileName, fov=120, destination=0):
         if (destination == 0):
             destination = str(os.getcwd()) + '/Output/' + fileName + ".png"
         parsedTime = self.timeParser(dateTime)
@@ -117,7 +117,7 @@ class skyChartGenerator():
         self.movePhotos(fileName, destination=destination)
         return
 
-    def setWindowSize(self, height, width):
+    def setWindowSize(self, width, height):
         # Height and Width in pixels
         self.sendCommand(f'RESIZE {width} {height}')
         self.sendCommand('CLEANUPMAP')
@@ -125,7 +125,6 @@ class skyChartGenerator():
 
     def setObservatory(self, latitude="+42d55m42s", longitude="+85d32m50s", altitude="790",
                        name="United States - Michigan/Calvin_University", timezone="UTC-5"):
-        self.sendCommand('CLEANUPMAP')
         self.sendCommand(f'SETTZ {timezone}')
         self.sendCommand(f'SETOBS LAT:{latitude}LON:{longitude}ALT:{altitude}mOBS:{name}')
         return
