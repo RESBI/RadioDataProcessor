@@ -1,36 +1,89 @@
 import argparse
+import os
 
-from PIL import Image, ImageFile
+from PIL import Image
 
 """
-Script that merges images from two folders.
+Script that merges images from a input folder.
+
+Example:
+
+If folder structure:
+    - /resources/output/Test1_chart_1.png
+    - /resources/output/Test1_chart_2.png
+    - /resources/output/Test1_plot_1.png
+    - /resources/output/Test1_plot_2.png
+
+Then command:
+
+ImageMerger.py 
+    --input_directory=resources/output
+    --output_directory=resources/output/merged 
+    --prefix_skychart=Test1_chart 
+    --prefix_plot=Test1_plot 
 """
 
-# TODO: loop over directories and merge:
-#   -> Test1_plot_1.png + Test1_skychart_1.png
-#   -> Test1_plot_2.png + Test1_skychart_2.png
+
+def createDirIfNotExists(directory):
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+        print("Output directory created: %s" % directory)
+
 
 if __name__ == '__main__':
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument(
-        "--directory_radio_data",
+        "--input_directory",
         required=True,
         type=str
     )
     argumentParser.add_argument(
-        "--directory_skychart",
+        "--output_directory",
+        required=True,
+        type=str
+    )
+    argumentParser.add_argument(
+        "--prefix_skychart",
+        required=True,
+        type=str
+    )
+    argumentParser.add_argument(
+        "--prefix_plot",
         required=True,
         type=str
     )
 
-    # FIX: raise OSError(msg) from e -> OSError: image file is truncated
     arguments = argumentParser.parse_args()
 
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
-    with (Image.open(arguments.directory_radio_data) as radio_data_image, Image.open(arguments.directory_skychart) as sky_chart_image):
-        width = radio_data_image.width + sky_chart_image.width
-        height = max(radio_data_image.height, sky_chart_image.height)
-        merged_image = Image.new("RGB", (width, height))
-        merged_image.paste(radio_data_image)
-        merged_image.paste(sky_chart_image, (radio_data_image.size[0], 0))
-        merged_image.save("test_image_merged.jpeg", "JPEG")
+    counter = 1
+    inputDirectory = arguments.input_directory
+    outputDirectory = arguments.output_directory
+    fileCount = len(os.listdir(inputDirectory)) / 2
+
+    while counter <= fileCount:
+        bothPathExists = False
+        skychartPath = "%s/%s_%d.png" % (inputDirectory, arguments.prefix_skychart, counter)
+        plotDataPath = "%s/%s_%d.png" % (inputDirectory, arguments.prefix_plot, counter)
+
+        # Two if-statements for logging purposes.
+        if os.path.exists(skychartPath):
+            if os.path.exists(plotDataPath):
+                bothPathExists = True
+            else:
+                print("%s does not exist!" % plotDataPath)
+        else:
+            print("%s does not exist!" % skychartPath)
+
+        if bothPathExists:
+            createDirIfNotExists(outputDirectory)
+            with (Image.open(plotDataPath) as plot_data_image, Image.open(skychartPath) as sky_chart_image):
+                width = plot_data_image.width + sky_chart_image.width
+                height = max(plot_data_image.height, sky_chart_image.height)
+                merged_image = Image.new("RGB", (width, height))
+                merged_image.paste(plot_data_image)
+                merged_image.paste(sky_chart_image, (plot_data_image.size[0], 0))
+                new_image_path = "%s/plot_sky_merge_%d.jpeg" % (arguments.output_directory, counter)
+                merged_image.save(new_image_path, "JPEG")
+                print("Image created: %s" % new_image_path)
+
+        counter += 1
