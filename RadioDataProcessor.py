@@ -350,7 +350,6 @@ if __name__ == "__main__":
             print("[main] Generating chart: {}...".format(chart_file_path))
             chart_enable, latitude_raw, longitude_raw, altitude_raw = chart_config
             skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
-            skychart.setObservatory(latitude_raw, longitude_raw, altitude_raw)
             skychart.generateChart(item.header[0], chart_file_name, fov = 330, height = 1440, width = 1920, destination = chart_file_path)
     
     time_end = time.time() 
